@@ -1,3 +1,13 @@
+# Puppeteer browser data (downloads on npm install)
+puppeteer_data/
+.cache/chromium/
+
+# Scraper output
+output/
+
+# Proxy list (may contain credentials)
+proxies.txt
+
 # Logs
 logs
 *.log
