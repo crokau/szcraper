@@ -8,8 +8,7 @@ You are an AI that writes Node.js scraping scripts for Gumtree Australia. Use th
 import lib from "./lib.mjs";
 
 const results = await lib.scrapeGumtreeSearch({
-  query: "iphone 15",
-  location: "sydney",
+  location: "iphone 15 sydney",  // Full search: item + location
   maxPages: 3,
 });
 
@@ -24,26 +23,11 @@ lib.saveJson("./output/results.json", results);
 ### URL Structure
 
 ```
-Search: https://www.gumtree.com.au/s-[location]/[query]/k0
+Search: https://www.gumtree.com.au/s-[query+with+plus+signs]/k0
 Listing: https://www.gumtree.com.au/s-ad/[location]/[category]/[title]/[id]
 ```
 
-### Location Slugs
-
-Locations are lowercase, hyphen-separated:
-- `sydney`, `melbourne`, `brisbane`, `perth`, `adelaide`
-- `nsw`, `vic`, `qld`, `wa`, `sa`, `tas`, `nt`, `act`
-- `sydney-region`, `melbourne-cbd`, `inner-west`
-
-### Category Slugs (Optional)
-
-- `cars-vans-utes` - Vehicles
-- `real-estate` - Property
-- `jobs` - Employment
-- `pets` - Animals
-- `electronics-computer` - Tech
-- `furniture` - Home
-- `services` - Services
+The library automatically converts spaces to `+` in the URL.
 
 ---
 
@@ -54,22 +38,19 @@ Locations are lowercase, hyphen-separated:
 ```javascript
 // Complete search with pagination
 const results = await lib.scrapeGumtreeSearch({
-  query: "macbook pro",           // Required: search term
-  location: "melbourne",          // Optional: location filter
-  category: "electronics-computer", // Optional: category filter
-  maxPages: 5,                    // Max pages to scrape (default: 5)
-  headless: true,                 // Run headless (default: true)
-  scrapeDetails: false,           // Scrape each listing page (slower)
-  proxies: [],                    // Array of proxy URLs
+  location: "macbook pro melbourne",  // Required: full search term with location
+  maxPages: 5,                        // Max pages to scrape (default: 5)
+  headless: true,                     // Run headless (default: true)
+  scrapeDetails: true,                // Scrape each listing page for full details
+  proxies: [],                        // Array of proxy URLs
   onPage: ({ page, listings }) => console.log(`Page ${page}: ${listings.length} items`),
   onListing: (listing) => console.log(`Scraped: ${listing.title}`),
 });
 
 // Results structure:
 // {
-//   query: "macbook pro",
-//   location: "melbourne",
-//   listings: [{ url, title, price, location, image, ... }],
+//   location: "macbook pro melbourne",
+//   listings: [{ url, title, price, location, image, description, ... }],
 //   pagesScraped: 3,
 //   errors: []
 // }
@@ -95,7 +76,7 @@ const page = await lib.createPage(browser);
 await lib.warmup(page);
 
 // 4. Navigate with retry/blocking detection
-const url = lib.buildGumtreeSearchUrl("gaming laptop", { location: "sydney" });
+const url = lib.buildGumtreeSearchUrl("gaming laptop sydney");
 const nav = await lib.navigateTo(page, url);
 
 if (!nav.ok) {
@@ -271,8 +252,7 @@ await lib.saveScreenshot(page, "./output/screenshot.png");
 import lib from "./lib.mjs";
 
 const results = await lib.scrapeGumtreeSearch({
-  query: "mountain bike",
-  location: "brisbane",
+  location: "mountain bike brisbane",
   maxPages: 2,
 });
 
@@ -286,10 +266,9 @@ console.log(`Found ${results.listings.length} bikes`);
 import lib from "./lib.mjs";
 
 const results = await lib.scrapeGumtreeSearch({
-  query: "ps5",
-  location: "melbourne",
+  location: "ps5 melbourne",
   maxPages: 1,
-  scrapeDetails: true, // Slower but gets full info
+  scrapeDetails: true, // Scrapes each listing page for full info
   onListing: (l) => console.log(`${l.title} - ${l.price}`),
 });
 
@@ -305,11 +284,7 @@ const browser = await lib.createBrowser({ headless: true });
 const page = await lib.createPage(browser);
 await lib.warmup(page);
 
-const url = lib.buildGumtreeSearchUrl("toyota hilux", {
-  location: "perth",
-  category: "cars-vans-utes",
-});
-
+const url = lib.buildGumtreeSearchUrl("toyota hilux perth");
 await lib.navigateTo(page, url);
 const listings = await lib.extractGumtreeListings(page);
 
@@ -330,14 +305,13 @@ await browser.close();
 ```javascript
 import lib from "./lib.mjs";
 
-const queries = ["iphone 15", "iphone 14", "iphone 13"];
+const searches = ["iphone 15 sydney", "iphone 14 sydney", "iphone 13 sydney"];
 const allResults = [];
 
-for (const query of queries) {
-  console.log(`Searching: ${query}`);
+for (const location of searches) {
+  console.log(`Searching: ${location}`);
   const results = await lib.scrapeGumtreeSearch({
-    query,
-    location: "sydney",
+    location,
     maxPages: 2,
   });
   allResults.push(...results.listings);
@@ -357,8 +331,7 @@ import lib from "./lib.mjs";
 const proxies = lib.loadProxies("./proxies.txt");
 
 const results = await lib.scrapeGumtreeSearch({
-  query: "nvidia rtx 4090",
-  location: "australia",
+  location: "nvidia rtx 4090",
   maxPages: 10,
   proxies,
   onPage: ({ page }) => console.log(`Completed page ${page}`),
@@ -381,7 +354,7 @@ Common errors and solutions:
 | `Navigation timeout` | Slow page/network | Increase timeout |
 
 ```javascript
-const results = await lib.scrapeGumtreeSearch({ query: "test" });
+const results = await lib.scrapeGumtreeSearch({ location: "test" });
 
 if (results.errors.length > 0) {
   console.error("Errors occurred:", results.errors);

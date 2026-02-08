@@ -1,23 +1,22 @@
 /**
  * Example: Search Gumtree for items
  *
- * Usage: node example.mjs "search term" [location]
+ * Usage: node example.mjs <search terms including location>
  *
  * Examples:
- *   node example.mjs "iphone 15"
- *   node example.mjs "mountain bike" sydney
- *   node example.mjs "toyota hilux" perth
+ *   node example.mjs iphone 15 sydney
+ *   node example.mjs mountain bike brisbane
+ *   node example.mjs toyota hilux perth
  */
 
 import lib from "./lib.mjs";
 
-const query = process.argv[2] || "iphone";
-const location = process.argv[3] || "";
+// Location is the full search term (e.g. "iphone sydney")
+const location = process.argv.slice(2).join(" ") || "iphone sydney";
 
-console.log(`\nSearching Gumtree for: "${query}"${location ? ` in ${location}` : ""}\n`);
+console.log(`\nSearching Gumtree for: "${location}"\n`);
 
 const results = await lib.scrapeGumtreeSearch({
-  query,
   location,
   maxPages: 2,
   headless: true,

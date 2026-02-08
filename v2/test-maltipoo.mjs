@@ -10,10 +10,10 @@ console.log("🐕 Searching for Maltipoo puppies on Gumtree...\n");
 
 // Try with visible browser to debug
 const results = await lib.scrapeGumtreeSearch({
-  query: "maltipoo%20puppy",
-  location: "maltipoo%20sydney",
+  location: "maltipoo puppies sydney",
   maxPages: 2,
   headless: false,  // Set to true once working
+  scrapeDetails: true,  // Scrape each listing page
   onPage: ({ page, listings }) => {
     console.log(`Page ${page}: Found ${listings.length} listings`);
   },

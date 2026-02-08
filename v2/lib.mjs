@@ -385,41 +385,21 @@ export async function scrollToBottom(page, options = {}) {
 /**
  * Build Gumtree search URL
  *
- * @param {string} query - Search term
+ * @param {string} location - Full search term (e.g., "maltipoo puppies sydney")
  * @param {Object} options
- * @param {string} options.location - Location (e.g., "sydney", "melbourne")
- * @param {string} options.category - Category slug
  * @param {number} options.page - Page number (1-based)
- * @param {string} options.sort - Sort order
  * @returns {string}
  */
-export function buildGumtreeSearchUrl(query, options = {}) {
-  const { location, category, page = 1, sort } = options;
+export function buildGumtreeSearchUrl(location, options = {}) {
+  const { page = 1 } = options;
 
-  const q = encodeURIComponent(query);
-  let url;
-
-  if (location && location.trim()) {
-    const loc = location.toLowerCase().trim().replace(/\s+/g, "-");
-    if (category) {
-      url = `https://www.gumtree.com.au/s-${category}/${loc}/${q}/k0`;
-    } else {
-      url = `https://www.gumtree.com.au/s-${loc}/${q}/k0`;
-    }
-  } else if (category) {
-    url = `https://www.gumtree.com.au/s-${category}/${q}/k0`;
-  } else {
-    url = `https://www.gumtree.com.au/s-${q}/k0`;
-  }
+  // Replace spaces with + for URL (Gumtree format)
+  const q = location.trim().replace(/\s+/g, "+");
+  let url = `https://www.gumtree.com.au/s-${q}/k0`;
 
   // Add page parameter
   if (page > 1) {
     url += `?page=${page}`;
-  }
-
-  // Add sort parameter
-  if (sort) {
-    url += url.includes("?") ? `&sort=${sort}` : `?sort=${sort}`;
   }
 
   return url;
@@ -648,9 +628,7 @@ export async function saveScreenshot(page, filepath) {
  */
 export async function scrapeGumtreeSearch(options) {
   const {
-    query,
-    location,
-    category,
+    location,  // Full search term, e.g. "maltipoo puppies sydney"
     maxPages = 5,
     headless = true,
     onPage,
@@ -660,7 +638,6 @@ export async function scrapeGumtreeSearch(options) {
   } = options;
 
   const results = {
-    query,
     location,
     listings: [],
     pagesScraped: 0,
@@ -681,7 +658,7 @@ export async function scrapeGumtreeSearch(options) {
     let hasMore = true;
 
     while (hasMore && currentPage <= maxPages) {
-      const url = buildGumtreeSearchUrl(query, { location, category, page: currentPage });
+      const url = buildGumtreeSearchUrl(location, { page: currentPage });
 
       const nav = await navigateTo(page, url);
 
