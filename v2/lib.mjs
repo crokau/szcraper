@@ -650,7 +650,6 @@ export async function scrapeGumtreeSearch(options) {
   const {
     query,
     location,
-    category,
     maxPages = 5,
     headless = true,
     onPage,
@@ -659,9 +658,13 @@ export async function scrapeGumtreeSearch(options) {
     proxies = [],
   } = options;
 
+  // Build full search term (query + location)
+  const searchTerm = location ? `${query} ${location}`.trim() : query;
+
   const results = {
     query,
     location,
+    searchTerm,
     listings: [],
     pagesScraped: 0,
     errors: [],
@@ -674,30 +677,62 @@ export async function scrapeGumtreeSearch(options) {
     browser = await createBrowser({ headless, proxy });
     const page = await createPage(browser);
 
-    // Warmup
-    await warmup(page);
+    // Go to Gumtree homepage
+    console.log("Opening Gumtree...");
+    const nav = await navigateTo(page, "https://www.gumtree.com.au/");
+
+    if (!nav.ok) {
+      results.errors.push({ page: 0, error: nav.error });
+      return results;
+    }
+
+    // Check for Cloudflare
+    if (await isCloudflareChallenge(page)) {
+      results.errors.push({ page: 0, error: "Cloudflare challenge detected on homepage" });
+      return results;
+    }
+
+    await delay(1000, 2000);
+
+    // Type into search box
+    console.log(`Searching for: "${searchTerm}"`);
+    const searchInput = await page.waitForSelector('#srp-search-input', { timeout: 10000 });
+
+    // Clear and type search term (human-like typing)
+    await searchInput.click({ clickCount: 3 }); // Select all
+    await delay(100, 200);
+    await searchInput.type(searchTerm, { delay: 50 + Math.random() * 50 });
+    await delay(300, 600);
+
+    // Click search button
+    const searchButton = await page.$('button[data-gtm-searchbutton="true"]');
+    if (searchButton) {
+      await searchButton.click();
+    } else {
+      // Fallback: press Enter
+      await page.keyboard.press('Enter');
+    }
+
+    // Wait for results to load
+    await delay(2000, 3000);
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+    await delay(1000, 2000);
 
     let currentPage = 1;
     let hasMore = true;
 
     while (hasMore && currentPage <= maxPages) {
-      const url = buildGumtreeSearchUrl(query, { location, category, page: currentPage });
-
-      const nav = await navigateTo(page, url);
-
-      if (!nav.ok) {
-        results.errors.push({ page: currentPage, error: nav.error });
-        break;
-      }
-
       // Check for Cloudflare
       if (await isCloudflareChallenge(page)) {
         results.errors.push({ page: currentPage, error: "Cloudflare challenge detected" });
         break;
       }
 
+      await humanize(page);
+
       // Extract listings
       const listings = await extractGumtreeListings(page);
+      console.log(`Page ${currentPage}: Found ${listings.length} listings`);
 
       // Optionally scrape individual listing details
       if (scrapeDetails && listings.length > 0) {
@@ -717,14 +752,26 @@ export async function scrapeGumtreeSearch(options) {
       results.listings.push(...listings);
       results.pagesScraped++;
 
-      if (onPage) onPage({ page: currentPage, listings, url });
+      if (onPage) onPage({ page: currentPage, listings, url: page.url() });
 
       // Check pagination
       const pagination = await getPaginationInfo(page);
       hasMore = pagination.hasNext && currentPage < pagination.totalPages;
-      currentPage++;
 
-      if (hasMore) await delay(1500, 3000);
+      if (hasMore) {
+        // Click next page
+        const nextBtn = await page.$('a[rel="next"], [aria-label*="Next"], .pagination .next a');
+        if (nextBtn) {
+          await nextBtn.click();
+          await delay(2000, 3000);
+          await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+          await delay(1000, 2000);
+        } else {
+          hasMore = false;
+        }
+      }
+
+      currentPage++;
     }
 
   } catch (e) {

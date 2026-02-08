@@ -11,12 +11,9 @@ console.log("🐕 Searching for Maltipoo puppies on Gumtree...\n");
 // Try with visible browser to debug
 const results = await lib.scrapeGumtreeSearch({
   query: "maltipoo puppy",
-  location: "maltipoo sydney",
+  location: "sydney",  // Location appended to query, e.g. "maltipoo puppy sydney"
   maxPages: 2,
   headless: false,  // Set to true once working
-  onPage: ({ page, listings }) => {
-    console.log(`Page ${page}: Found ${listings.length} listings`);
-  },
 });
 
 // If still blocked, you may need:
