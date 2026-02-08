@@ -1,0 +1,17 @@
+2025/11/09-18:04:54.455 8c07f Reusing MANIFEST /Users/a66/Documents/GitHub/szcraper/puppeteer_data/Default/Session Storage/MANIFEST-000001
+2025/11/09-18:04:54.466 8c07f Recovering log #7
+2025/11/09-18:04:54.467 8c07f Level-0 table #10: started
+2025/11/09-18:04:54.474 8c07f Level-0 table #10: 48971 bytes OK
+2025/11/09-18:04:54.476 8c07f Recovering log #9
+2025/11/09-18:04:54.477 8c07f Reusing old log /Users/a66/Documents/GitHub/szcraper/puppeteer_data/Default/Session Storage/000009.log 
+2025/11/09-18:04:54.481 8c07f Delete type=0 #7
+2025/11/09-18:04:54.483 8c083 Compacting 4@0 + 0@1 files
+2025/11/09-18:04:54.495 8c083 Generated table #11@0: 29 keys, 48213 bytes
+2025/11/09-18:04:54.496 8c083 Compacted 4@0 + 0@1 files => 48213 bytes
+2025/11/09-18:04:54.497 8c083 compacted to: files[ 0 1 0 0 0 0 0 ]
+2025/11/09-18:04:54.498 8c083 Delete type=2 #3
+2025/11/09-18:04:54.498 8c083 Delete type=2 #6
+2025/11/09-18:04:54.498 8c083 Delete type=2 #10
+2025/11/09-18:04:54.498 8c083 Delete type=2 #8
+2025/11/09-18:05:27.473 8c09f Level-0 table #13: started
+2025/11/09-18:05:27.478 8c09f Level-0 table #13: 48819 bytes OK
