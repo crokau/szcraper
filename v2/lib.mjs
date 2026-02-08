@@ -97,10 +97,31 @@ export async function createBrowser(options = {}) {
     args.push(`--proxy-server=${config.proxy}`);
   }
 
+  // Must use system Chrome (required for anti-detection)
+  const systemChromePaths = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",  // macOS
+    "/usr/bin/google-chrome",  // Linux
+    "/usr/bin/chromium-browser",  // Linux alt
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  // Windows
+  ];
+
+  let executablePath = null;
+  for (const p of systemChromePaths) {
+    if (fs.existsSync(p)) {
+      executablePath = p;
+      break;
+    }
+  }
+
+  if (!executablePath) {
+    throw new Error("System Chrome not found. Install Google Chrome to proceed.");
+  }
+
   const browser = await puppeteer.launch({
     headless: config.headless,
     args,
     defaultViewport: config.viewport,
+    executablePath,
   });
 
   return browser;

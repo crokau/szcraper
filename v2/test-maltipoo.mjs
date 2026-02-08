@@ -8,15 +8,20 @@ import lib from "./lib.mjs";
 
 console.log("🐕 Searching for Maltipoo puppies on Gumtree...\n");
 
+// Try with visible browser to debug
 const results = await lib.scrapeGumtreeSearch({
   query: "maltipoo puppy",
   location: "australia",
-  maxPages: 3,
-  headless: true,
+  maxPages: 2,
+  headless: false,  // Set to true once working
   onPage: ({ page, listings }) => {
     console.log(`Page ${page}: Found ${listings.length} listings`);
   },
 });
+
+// If still blocked, you may need:
+// 1. A proxy - add proxies: ["http://user:pass@host:port"]
+// 2. Wait longer - Cloudflare challenge may need manual solving first time
 
 console.log(`\n--- Results ---`);
 console.log(`Total listings: ${results.listings.length}`);
